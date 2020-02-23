@@ -147,13 +147,17 @@
       function getLookupFieldKeys(fieldsResp) {
           return Object.keys(fieldsResp).filter(function (key) { return typeof fieldsResp[key].lookup !== "undefined"; });
       }
-      function filterLookupField(layoutFieldList, fieldsResp) {
+      function addIsLookup(layoutFieldList, fieldsResp) {
           var lookupFieldKeys = getLookupFieldKeys(fieldsResp);
           if (lookupFieldKeys.length === 0)
               ;
-          return layoutFieldList.filter(function (layoutField) {
-              return !lookupFieldKeys.some(function (key) { return fieldsResp[key].code === layoutField.code; });
-          });
+          return layoutFieldList.reduce(function (acc, layoutField) {
+              if (lookupFieldKeys.includes(layoutField.code)) {
+                  layoutField.isLookup = true;
+              }
+              acc.push(layoutField);
+              return acc;
+          }, []);
       }
       function flattenFieldsForSubtable(fieldsResp) {
           return Object.keys(fieldsResp).reduce(function (fields, key) {
@@ -167,7 +171,7 @@
       function fetchAllFields(selectFieldTypes) {
           return Promise.all([fetchFormInfoByFields(), fetchFormInfoByLayout()]).then(function (_a) {
               var fieldsResp = _a[0], layoutResp = _a[1];
-              var fieldList = addLabel(filterLookupField(modifiedLayoutResp(layoutResp), flattenFieldsForSubtable(fieldsResp)), fieldsResp);
+              var fieldList = addLabel(addIsLookup(modifiedLayoutResp(layoutResp), flattenFieldsForSubtable(fieldsResp)), fieldsResp);
               return selectFieldTypes
                   ? fieldList.filter(function (field) { return selectFieldTypes.indexOf(field.type) !== -1; })
                   : fieldList;
