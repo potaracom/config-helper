@@ -80,10 +80,14 @@ export function createGetFields(
   function addIsLookup(layoutFieldList: any, fieldsResp: any) {
     const lookupFieldKeys = getLookupFieldKeys(fieldsResp);
     if (lookupFieldKeys.length === 0) layoutFieldList;
-    return layoutFieldList.map((layoutField: any) => ({
-      ...layoutField,
-      isLookup: lookupFieldKeys.includes(layoutField.code)
-    }));
+
+    return layoutFieldList.reduce((acc: any, layoutField: any) => {
+      if (lookupFieldKeys.includes(layoutField.code)) {
+        layoutField.isLookup = true;
+      }
+      acc.push(layoutField);
+      return acc;
+    }, []);
   }
 
   function flattenFieldsForSubtable(fieldsResp: any) {
