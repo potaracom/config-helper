@@ -129,6 +129,7 @@ MODIFIER | Updated by | type (field type) | code (field code) | label (field nam
 UPDATED_TIME | Updated datetime | type (field type) | code (field code) | label (field name)
 
 If the field in `Table Field`, return the response includes `subtableCode`.
+If the field type is LOOKUP, return the response includes `isLookup`.
 
 ## Usage Example
 
