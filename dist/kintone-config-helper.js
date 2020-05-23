@@ -33,19 +33,19 @@
       "UPDATED_TIME"
   ];
   function createKintoneClient(kintone) {
-      function fetchFormInfoByFields() {
+      function fetchFormInfoByFields(appId) {
           var url = kintone.api.url("/k/v1/preview/app/form/fields", true);
           var body = {
-              app: kintone.app.getId()
+              app: appId
           };
           return kintone.api(url, "GET", body).then(function (resp) {
               return resp.properties;
           });
       }
-      function fetchFormInfoByLayout() {
+      function fetchFormInfoByLayout(appId) {
           var url = kintone.api.url("/k/v1/preview/app/form/layout", true);
           var body = {
-              app: kintone.app.getId()
+              app: appId ? appId : kintone.app.getId()
           };
           return kintone.api(url, "GET", body).then(function (resp) {
               return resp.layout;
@@ -168,8 +168,8 @@
               return __assign({}, fields, (_b = {}, _b[key] = fieldsResp[key], _b));
           }, {});
       }
-      function fetchAllFields(selectFieldTypes) {
-          return Promise.all([fetchFormInfoByFields(), fetchFormInfoByLayout()]).then(function (_a) {
+      function fetchAllFields(appId, selectFieldTypes) {
+          return Promise.all([fetchFormInfoByFields(appId), fetchFormInfoByLayout(appId)]).then(function (_a) {
               var fieldsResp = _a[0], layoutResp = _a[1];
               var fieldList = addLabel(addIsLookup(modifiedLayoutResp(layoutResp), flattenFieldsForSubtable(fieldsResp)), fieldsResp);
               return selectFieldTypes
@@ -189,15 +189,15 @@
           }
           return NOT_MATCH_MESSAGE;
       }
-      function getFields(selectFieldType) {
+      function getFields(appId, selectFieldType) {
           if (typeof selectFieldType === "undefined") {
-              return fetchAllFields();
+              return fetchAllFields(appId);
           }
           var error = validateGetAllFieldsArgument(selectFieldType);
           if (error) {
               return Promise.reject(new Error(error));
           }
-          return fetchAllFields(Array.isArray(selectFieldType) ? selectFieldType : [selectFieldType]);
+          return fetchAllFields(appId, Array.isArray(selectFieldType) ? selectFieldType : [selectFieldType]);
       }
       return getFields;
   }

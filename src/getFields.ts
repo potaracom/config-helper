@@ -106,8 +106,8 @@ export function createGetFields(
     }, {});
   }
 
-  function fetchAllFields(selectFieldTypes?: string[]): Promise<any> {
-    return Promise.all([fetchFormInfoByFields(), fetchFormInfoByLayout()]).then(
+  function fetchAllFields(appId: number, selectFieldTypes?: string[]): Promise<any> {
+    return Promise.all([fetchFormInfoByFields(appId), fetchFormInfoByLayout(appId)]).then(
       ([fieldsResp, layoutResp]) => {
         const fieldList = addLabel(
           addIsLookup(
@@ -142,9 +142,9 @@ export function createGetFields(
     return NOT_MATCH_MESSAGE;
   }
 
-  function getFields(selectFieldType?: string | string[]): Promise<any> {
+  function getFields(appId: number, selectFieldType?: string | string[]): Promise<any> {
     if (typeof selectFieldType === "undefined") {
-      return fetchAllFields();
+      return fetchAllFields(appId);
     }
 
     const error = validateGetAllFieldsArgument(selectFieldType);
@@ -153,7 +153,7 @@ export function createGetFields(
     }
 
     return fetchAllFields(
-      Array.isArray(selectFieldType) ? selectFieldType : [selectFieldType]
+      appId, Array.isArray(selectFieldType) ? selectFieldType : [selectFieldType]
     );
   }
   return getFields;

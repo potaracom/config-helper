@@ -73,25 +73,25 @@ export interface KintoneObject {
 }
 
 export interface KintoneClient {
-  fetchFormInfoByFields: () => Promise<any>;
-  fetchFormInfoByLayout: () => Promise<any>;
+  fetchFormInfoByFields: (appId: number) => Promise<any>;
+  fetchFormInfoByLayout: (appId: number) => Promise<any>;
 }
 
 export function createKintoneClient(kintone: KintoneObject) {
-  function fetchFormInfoByFields(): any {
+  function fetchFormInfoByFields(appId: number): any {
     const url = kintone.api.url("/k/v1/preview/app/form/fields", true);
     const body = {
-      app: kintone.app.getId()
+      app: appId
     };
     return kintone.api(url, "GET", body).then(resp => {
       return resp.properties;
     });
   }
 
-  function fetchFormInfoByLayout(): any {
+  function fetchFormInfoByLayout(appId?: number): any {
     const url = kintone.api.url("/k/v1/preview/app/form/layout", true);
     const body = {
-      app: kintone.app.getId()
+      app: appId ? appId : kintone.app.getId()
     };
     return kintone.api(url, "GET", body).then(resp => {
       return resp.layout;
