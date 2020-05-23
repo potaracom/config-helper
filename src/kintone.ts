@@ -91,7 +91,7 @@ export function createKintoneClient(kintone: KintoneObject) {
   function fetchFormInfoByLayout(appId?: number): any {
     const url = kintone.api.url("/k/v1/preview/app/form/layout", true);
     const body = {
-      app: appId ? appId : kintone.app.getId()
+      app: appId
     };
     return kintone.api(url, "GET", body).then(resp => {
       return resp.layout;

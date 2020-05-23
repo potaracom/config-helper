@@ -45,7 +45,7 @@
       function fetchFormInfoByLayout(appId) {
           var url = kintone.api.url("/k/v1/preview/app/form/layout", true);
           var body = {
-              app: appId ? appId : kintone.app.getId()
+              app: appId
           };
           return kintone.api(url, "GET", body).then(function (resp) {
               return resp.layout;
