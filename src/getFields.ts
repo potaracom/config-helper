@@ -77,13 +77,17 @@ export function createGetFields(
     );
   }
 
-  function filterLookupField(layoutFieldList: any, fieldsResp: any) {
+  function addIsLookup(layoutFieldList: any, fieldsResp: any) {
     const lookupFieldKeys = getLookupFieldKeys(fieldsResp);
     if (lookupFieldKeys.length === 0) layoutFieldList;
-    return layoutFieldList.filter(
-      (layoutField: any) =>
-        !lookupFieldKeys.some(key => fieldsResp[key].code === layoutField.code)
-    );
+
+    return layoutFieldList.reduce((acc: any, layoutField: any) => {
+      if (lookupFieldKeys.includes(layoutField.code)) {
+        layoutField.isLookup = true;
+      }
+      acc.push(layoutField);
+      return acc;
+    }, []);
   }
 
   function flattenFieldsForSubtable(fieldsResp: any) {
@@ -106,7 +110,7 @@ export function createGetFields(
     return Promise.all([fetchFormInfoByFields(), fetchFormInfoByLayout()]).then(
       ([fieldsResp, layoutResp]) => {
         const fieldList = addLabel(
-          filterLookupField(
+          addIsLookup(
             modifiedLayoutResp(layoutResp),
             flattenFieldsForSubtable(fieldsResp)
           ),
