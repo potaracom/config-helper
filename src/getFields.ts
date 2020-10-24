@@ -32,19 +32,19 @@ export function createGetFields(
             { type: layout.type, code: layout.code },
             ...layout.layout
               .map((childLayout: any) => getFieldInfo(childLayout.fields))
-              .reduce((acc: any, cur: any) => acc.concat(cur), [])
+              .reduce((acc: any, cur: any) => acc.concat(cur), []),
           ];
         case "SUBTABLE":
           const layoutFieldsIncludeSubtableCode = layout.fields.map(
             (layoutField: any) => ({
               ...layoutField,
-              subtableCode: layout.code
+              subtableCode: layout.code,
             })
           );
           return [
             ...acc,
             { type: layout.type, code: layout.code },
-            ...getFieldInfo(layoutFieldsIncludeSubtableCode)
+            ...getFieldInfo(layoutFieldsIncludeSubtableCode),
           ];
       }
     }, []);
@@ -64,6 +64,20 @@ export function createGetFields(
     const labeledFields: { [code: string]: string } = getLabeledFields(
       fieldsResp
     );
+
+    // フォームに設置されていない場合でもレコード番号を取得する
+    const recordNumberField: any = Object.values(fieldsResp).find(
+      (fieldResp: any) => fieldResp.type === "RECORD_NUMBER"
+    );
+    if (
+      layoutFieldList.find(
+        (layoutField: any) => layoutField.type === "RECORD_NUMBER"
+      ) === undefined
+    ) {
+      const { type, code } = recordNumberField;
+      layoutFieldList.push({ type, code });
+    }
+
     return layoutFieldList.map((layoutField: any) =>
       labeledFields[layoutField.code]
         ? { ...layoutField, label: labeledFields[layoutField.code] }
@@ -73,7 +87,7 @@ export function createGetFields(
 
   function getLookupFieldKeys(fieldsResp: any) {
     return Object.keys(fieldsResp).filter(
-      key => typeof fieldsResp[key].lookup !== "undefined"
+      (key) => typeof fieldsResp[key].lookup !== "undefined"
     );
   }
 
@@ -96,38 +110,42 @@ export function createGetFields(
         return {
           ...fields,
           [key]: fieldsResp[key],
-          ...fieldsResp[key].fields
+          ...fieldsResp[key].fields,
         };
       }
       return {
         ...fields,
-        [key]: fieldsResp[key]
+        [key]: fieldsResp[key],
       };
     }, {});
   }
 
-  function fetchAllFields(appId: number, selectFieldTypes?: string[]): Promise<any> {
-    return Promise.all([fetchFormInfoByFields(appId), fetchFormInfoByLayout(appId)]).then(
-      ([fieldsResp, layoutResp]) => {
-        const fieldList = addLabel(
-          addIsLookup(
-            modifiedLayoutResp(layoutResp),
-            flattenFieldsForSubtable(fieldsResp)
-          ),
-          fieldsResp
-        );
+  function fetchAllFields(
+    appId: number,
+    selectFieldTypes?: string[]
+  ): Promise<any> {
+    return Promise.all([
+      fetchFormInfoByFields(appId),
+      fetchFormInfoByLayout(appId),
+    ]).then(([fieldsResp, layoutResp]) => {
+      const fieldList = addLabel(
+        addIsLookup(
+          modifiedLayoutResp(layoutResp),
+          flattenFieldsForSubtable(fieldsResp)
+        ),
+        fieldsResp
+      );
 
-        return selectFieldTypes
-          ? fieldList.filter(
-              (field: any) => selectFieldTypes.indexOf(field.type) !== -1
-            )
-          : fieldList;
-      }
-    );
+      return selectFieldTypes
+        ? fieldList.filter(
+            (field: any) => selectFieldTypes.indexOf(field.type) !== -1
+          )
+        : fieldList;
+    });
   }
 
   function validateFieldType(fieldType: string): boolean {
-    return ALL_FIELD_TYPES.some(type => type === fieldType);
+    return ALL_FIELD_TYPES.some((type) => type === fieldType);
   }
 
   function validateGetAllFieldsArgument(
@@ -142,7 +160,10 @@ export function createGetFields(
     return NOT_MATCH_MESSAGE;
   }
 
-  function getFields(appId: number, selectFieldType?: string | string[]): Promise<any> {
+  function getFields(
+    appId: number,
+    selectFieldType?: string | string[]
+  ): Promise<any> {
     if (typeof selectFieldType === "undefined") {
       return fetchAllFields(appId);
     }
@@ -153,7 +174,8 @@ export function createGetFields(
     }
 
     return fetchAllFields(
-      appId, Array.isArray(selectFieldType) ? selectFieldType : [selectFieldType]
+      appId,
+      Array.isArray(selectFieldType) ? selectFieldType : [selectFieldType]
     );
   }
   return getFields;

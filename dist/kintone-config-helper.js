@@ -139,6 +139,12 @@
       }
       function addLabel(layoutFieldList, fieldsResp) {
           var labeledFields = getLabeledFields(fieldsResp);
+          // フォームに設置されていない場合でもレコード番号を取得する
+          var recordNumberField = Object.values(fieldsResp).find(function (fieldResp) { return fieldResp.type === "RECORD_NUMBER"; });
+          if (layoutFieldList.find(function (layoutField) { return layoutField.type === "RECORD_NUMBER"; }) === undefined) {
+              var type = recordNumberField.type, code = recordNumberField.code;
+              layoutFieldList.push({ type: type, code: code });
+          }
           return layoutFieldList.map(function (layoutField) {
               return labeledFields[layoutField.code]
                   ? __assign({}, layoutField, { label: labeledFields[layoutField.code] }) : layoutField;
@@ -169,7 +175,10 @@
           }, {});
       }
       function fetchAllFields(appId, selectFieldTypes) {
-          return Promise.all([fetchFormInfoByFields(appId), fetchFormInfoByLayout(appId)]).then(function (_a) {
+          return Promise.all([
+              fetchFormInfoByFields(appId),
+              fetchFormInfoByLayout(appId),
+          ]).then(function (_a) {
               var fieldsResp = _a[0], layoutResp = _a[1];
               var fieldList = addLabel(addIsLookup(modifiedLayoutResp(layoutResp), flattenFieldsForSubtable(fieldsResp)), fieldsResp);
               return selectFieldTypes
